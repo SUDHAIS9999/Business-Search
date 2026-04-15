@@ -1,6 +1,4 @@
 import streamlit as st
-import subprocess
-import sys
 import time
 import json
 import re
@@ -11,7 +9,6 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.service import Service
-from selenium.common.exceptions import TimeoutException
 import warnings
 
 warnings.filterwarnings("ignore")
@@ -444,33 +441,6 @@ if search_button:
                                     mime="application/json"
                                 )
                             
-                            st.markdown("---")
-                            
-                            st.subheader("📥 Download Results")
-                            
-                            result_json = {
-                                "search_term": search_term,
-                                "business_name": best["name"],
-                                "registration_number": final_reg_number,
-                                "type": overview["type"],
-                                "managing_director": overview["managing_director"],
-                                "board_of_directors": overview["board_of_directors"],
-                                "shareholders": overview["shareholders"],
-                                "business_names": overview["business_names"],
-                                "business_activities": overview["business_activities"],
-                                "timestamp": datetime.now().isoformat(),
-                            }
-                            
-                            col1, col2 = st.columns(2)
-                            
-                            with col1:
-                                st.download_button(
-                                    label="📄 Download JSON",
-                                    data=json.dumps(result_json, indent=2),
-                                    file_name=f"{best['name']}_registry.json",
-                                    mime="application/json"
-                                )
-                            
                             with col2:
                                 csv_data = "Business Name,Registration #,Type,Owner/MD,Board Count,Shareholders Count,Business Names,Activities\n"
                                 csv_data += f'"{best["name"]}","{final_reg_number}","{overview["type"]}","{overview["managing_director"]}",{len(overview["board_of_directors"])},{len(overview["shareholders"])},{len(overview["business_names"])},{len(overview["business_activities"])}\n'
@@ -481,15 +451,6 @@ if search_button:
                                     file_name=f"{best['name']}_registry.csv",
                                     mime="text/csv"
                                 )
-
-    csv_data += f'"{best["name"]}","{final_reg_number}","{overview["type"]}","{overview["managing_director"]}",{len(overview["board_of_directors"])},{len(overview["shareholders"])},{len(overview["business_names"])},{len(overview["business_activities"])}\n'
-    
-    st.download_button(
-        label="📊 Download CSV",
-        data=csv_data,
-        file_name=f"{best['name']}_registry.csv",
-        mime="text/csv"
-    )
                             
             except Exception as e:
                 st.error(f"❌ Error: {str(e)}")
