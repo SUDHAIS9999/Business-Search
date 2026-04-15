@@ -80,26 +80,38 @@ def setup_driver():
 
     return webdriver.Chrome(service=Service(driver_path), options=options)
 
-# Search functions
 def search_business(driver, business_name: str) -> bool:
     try:
         driver.get("https://business.egov.mv/BusinessRegistry")
         time.sleep(5)
         
         search_box = driver.find_element(By.ID, "twotabsearchtextbox")
+        if search_box is None:
+            st.error("Search box not found on page")
+            return False
+            
         search_box.clear()
         search_box.send_keys(business_name)
-        time.sleep(1)
+        time.sleep(2)
         search_box.send_keys(Keys.RETURN)
         
         max_wait = 15
         for i in range(max_wait):
-            soup = BeautifulSoup(driver.page_source, "html.parser")
-            cards = soup.find_all("div", {"class": "col-6"})
-            if cards:
-                time.sleep(2)
-                return True
-            time.sleep(1)
+            try:
+                soup = BeautifulSoup(driver.page_source, "html.parser")
+                if soup is None:
+                    time.sleep(1)
+                    continue
+                    
+                cards = soup.find_all("div", {"class": "col-6"})
+                if cards and len(cards) > 0:
+                    time.sleep(2)
+                    return True
+            except Exception as e:
+                pass
+            
+            if i < max_wait - 1:
+                time.sleep(1)
         
         return True
     except Exception as e:
