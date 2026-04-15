@@ -65,11 +65,21 @@ def find_best_match(search_term: str, candidates: list) -> tuple:
 @st.cache_resource
 def setup_driver():
     try:
-        from webdriver_manager.chrome import ChromeDriverManager
         import shutil
         
-        driver_path = ChromeDriverManager().install()
-        chrome_path = shutil.which("google-chrome") or shutil.which("google-chrome-stable")
+        # Try to find chromium or chrome
+        chrome_path = shutil.which("chromium-browser") or shutil.which("chromium") or shutil.which("google-chrome") or shutil.which("google-chrome-stable")
+        
+        if not chrome_path:
+            st.error("Chrome/Chromium not found")
+            return None
+        
+        # Try to find chromedriver
+        driver_path = shutil.which("chromedriver")
+        
+        if not driver_path:
+            st.error("ChromeDriver not found")
+            return None
 
         options = webdriver.ChromeOptions()
         options.add_argument("--headless=new")
@@ -78,19 +88,18 @@ def setup_driver():
         options.add_argument("--disable-gpu")
         options.add_argument("--window-size=1920,1080")
         options.add_argument("--disable-blink-features=AutomationControlled")
-        if chrome_path:
-            options.binary_location = chrome_path
+        options.binary_location = chrome_path
         options.add_argument(
             "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
             "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         )
 
-        driver = webdriver.Chrome(service=Service(driver_path), options=options)
+        driver = webdriver.Chrome(executable_path=driver_path, options=options)
         return driver
     except Exception as e:
         st.error(f"Driver setup error: {str(e)}")
         return None
-
+        
 # Search functions
 def search_business(driver, business_name: str) -> bool:
     try:
