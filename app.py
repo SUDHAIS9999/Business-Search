@@ -7,7 +7,6 @@ import re
 from datetime import datetime
 from difflib import SequenceMatcher
 from bs4 import BeautifulSoup
-import pandas as pd
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -446,23 +445,15 @@ if search_button:
                                 )
                             
                             with col2:
-                                df = pd.DataFrame([{
-                                    "Business Name": best["name"],
-                                    "Registration #": final_reg_number,
-                                    "Type": overview["type"],
-                                    "Owner/MD": overview["managing_director"],
-                                    "Board Count": len(overview["board_of_directors"]),
-                                    "Shareholders Count": len(overview["shareholders"]),
-                                    "Business Names": len(overview["business_names"]),
-                                    "Activities": len(overview["business_activities"]),
-                                }])
-                                
-                                st.download_button(
-                                    label="📊 Download CSV",
-                                    data=df.to_csv(index=False),
-                                    file_name=f"{best['name']}_registry.csv",
-                                    mime="text/csv"
-                                )
+    csv_data = "Business Name,Registration #,Type,Owner/MD,Board Count,Shareholders Count,Business Names,Activities\n"
+    csv_data += f'"{best["name"]}","{final_reg_number}","{overview["type"]}","{overview["managing_director"]}",{len(overview["board_of_directors"])},{len(overview["shareholders"])},{len(overview["business_names"])},{len(overview["business_activities"])}\n'
+    
+    st.download_button(
+        label="📊 Download CSV",
+        data=csv_data,
+        file_name=f"{best['name']}_registry.csv",
+        mime="text/csv"
+    )
                             
             except Exception as e:
                 st.error(f"❌ Error: {str(e)}")
